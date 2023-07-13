@@ -15,17 +15,24 @@ import (
 )
 
 const (
-	VERSION       = "3.4.4"
+	VERSION       = "3.4.6"
 	GITHUB        = "https://github.com/sudosammy/knary"
 	GITHUBVERSION = "https://raw.githubusercontent.com/sudosammy/knary/master/VERSION"
 )
 
 func main() {
-	var help = flag.Bool("help", false, "Show help")
-	flag.Parse()
-	if *help {
+	var helpS = flag.Bool("h", false, "Show help")
+	var help = flag.Bool("help", false, "")
+	var versionS = flag.Bool("v", false, "Show version")
+	var version = flag.Bool("version", false, "")
+	flag.Parse() // https://github.com/golang/go/issues/35761
+	if *help || *helpS {
 		libknary.Printy("Version: "+VERSION, 1)
 		libknary.Printy("Find all configuration options and example .env files here: "+GITHUB+"/tree/master/examples", 3)
+		os.Exit(0)
+	}
+	if *version || *versionS {
+		libknary.Printy("Version: "+VERSION, 1)
 		os.Exit(0)
 	}
 
@@ -69,7 +76,7 @@ func main() {
 
 		EXT_IP = res
 	} else {
-		// test that user inputed a valid IP addr.
+		// test that user inputted a valid IP addr.
 		if !libknary.IsIP(os.Getenv("EXT_IP")) {
 			libknary.Printy("Couldn't parse EXT_IP. Are you sure it's a valid IP address?", 2)
 			return
@@ -118,11 +125,22 @@ func main() {
 		}
 	}
 	if os.Getenv("BURP_DOMAIN") != "" {
-		libknary.Printy("Working in collaborator compatibility mode on subdomain *."+os.Getenv("BURP_DOMAIN"), 1)
+		libknary.IsDeprecated("BURP_*", "REVERSE_PROXY_*", "3.5.0")
+		libknary.Printy("(Deprecated) Working in collaborator compatibility mode on subdomain *."+os.Getenv("BURP_DOMAIN"), 1)
 
 		if os.Getenv("BURP_DNS_PORT") == "" || os.Getenv("BURP_HTTP_PORT") == "" || os.Getenv("BURP_HTTPS_PORT") == "" {
 			libknary.Printy("Not all Burp Collaborator settings are set. This might cause errors.", 2)
 		}
+	}
+	if os.Getenv("REVERSE_PROXY_DOMAIN") != "" {
+		libknary.Printy("Proxying enabled on requests to: *."+os.Getenv("REVERSE_PROXY_DOMAIN"), 1)
+
+		if os.Getenv("REVERSE_PROXY_HTTP") == "" || os.Getenv("REVERSE_PROXY_HTTPS") == "" || os.Getenv("REVERSE_PROXY_DNS") == "" {
+			libknary.Printy("Not all reverse proxy settings are set. This might cause errors.", 2)
+		}
+	}
+	if os.Getenv("REVERSE_PROXY_DOMAIN") != "" && os.Getenv("BURP_DOMAIN") != "" {
+		libknary.Printy("Configuring both BURP_* and REVERSE_PROXY_* is not supported and may break things!", 2)
 	}
 	if os.Getenv("SLACK_WEBHOOK") != "" {
 		libknary.Printy("Posting to webhook: "+os.Getenv("SLACK_WEBHOOK"), 1)
@@ -183,12 +201,12 @@ func main() {
 			wg.Add(1)
 			go libknary.Accept443(ln443, &wg, restart)
 
-			_, _ = libknary.CheckTLSExpiry(30) // check TLS expiry on first lauch of knary
+			_, _ = libknary.CheckTLSExpiry(30) // check TLS expiry on first launch of knary
 			go libknary.TLSmonitor(restart)    // monitor filesystem changes to the TLS cert to trigger a reboot
 		}
 	}
 
-	// these go after all the screen prining for neatness
+	// these go after all the screen printing for neatness
 	libknary.CheckUpdate(VERSION, GITHUBVERSION, GITHUB)
 	libknary.HeartBeat(VERSION, true)
 

@@ -1,5 +1,6 @@
 .DS_Store
 .env
+stress.sh
 dev
 knary.log
 allowed.txt
@@ -14,3 +15,4 @@ certs/*.key
 certs/*.pem
 certs/archives/*
 !certs/archives/README.md
+static

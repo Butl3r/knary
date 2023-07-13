@@ -6,8 +6,7 @@ jobs:
     working_directory: ~/repo
     docker:
       - image: cimg/go:1.18-node
-      - image: cimg/go:1.19-node
-    parallelism: 2
+    parallelism: 3
     steps:
       - checkout
       - restore_cache:

@@ -1,6 +1,6 @@
 # knary - A simple HTTP(S) and DNS Canary
 
-[![Build Status](https://circleci.com/gh/sudosammy/knary/tree/master.svg?style=svg)](https://circleci.com/gh/sudosammy/knary/tree/master)  [![Coverage Status](https://coveralls.io/repos/github/sudosammy/knary/badge.svg?branch=master)](https://coveralls.io/github/sudosammy/knary?branch=master)
+[![Build Status](https://circleci.com/gh/sudosammy/knary/tree/master.svg?style=svg)](https://circleci.com/gh/sudosammy/knary/tree/master)  [![Go Report Card](https://goreportcard.com/badge/github.com/sudosammy/knary/v3)](https://goreportcard.com/report/github.com/sudosammy/knary/v3)  [![Coverage Status](https://coveralls.io/repos/github/sudosammy/knary/badge.svg?branch=master)](https://coveralls.io/github/sudosammy/knary?branch=master)
 
 >Like "Canary" but more hipster, which means better 😎😎😎
 
@@ -81,7 +81,7 @@ Sample configurations can be found [in the examples](https://github.com/sudosamm
 Using knary in a container is as simple as creating your `.env` file (or setting environment variables in the `docker-compose.yaml` file) and running `sudo docker compose up -d`
 
 ## OPSEC notes
-* Let's Encrypt will dox all the domains you are using with knary (and your `DNS_SUBDOMAIN` and `BURP_DOMAIN` if you are using those configurations). This is due to these domains being included in the SAN certificate generated for you. A remote adversary can read the certificate and extract the list of domains within it. To avoid this, don't configure `LETS_ENCRYPT`. You can use self-signed certificates with `TLS_CRT=<path>` and `TLS_KEY=<path>`; however, many hosts will refuse to connect reducing your visibility of incoming HTTPS connections.
+* Let's Encrypt will dox all the domains you are using with knary (and your `DNS_SUBDOMAIN`, `BURP_DOMAIN`, or `REVERSE_PROXY_DOMAIN` if you are using those configurations). This is due to these domains being included in the SAN certificate generated for you. A remote adversary can read the certificate and extract the list of domains within it. To avoid this, don't configure `LETS_ENCRYPT`. You can use self-signed certificates with `TLS_CRT=<path>` and `TLS_KEY=<path>`; however, many hosts will refuse to connect reducing your visibility of incoming HTTPS connections.
 * With enough effort, knary is likely fingerprint-able by a remote host. i.e. it's plausible an adversary could determine you are running knary on a given host. This is because knary is not an RFC compliant nameserver (because doing so involves dark magic) and it likely behaves in an unusual / unique manner when compared to other nameservers.
 
 ## Supported Webhook Configurations

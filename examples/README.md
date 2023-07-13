@@ -3,6 +3,7 @@
 ## Sample Files
 * `default_env` - A recommended quick start configuration file with Let's Encrypt configuration
 * `burp_env` - A recommended quick start configuration file if you are also using Burp Collaborator on the same server as knary
+* `reverse_env` - An example configuration demonstrating knary proxying requests to `*.web.knary.tld` to port `8080` on the same server
 * `multidomain_env` - An example of how to specify multiple knary domains. Domains must be comma-delimited. Whitespace is stripped automatically
 * `allowlist.txt` - This is an example allowlist showing how knary could be used with your team's names. This has the added benefit of allowing your team to configure [keyword notifications](https://slack.com/intl/en-au/help/articles/201355156-Configure-your-Slack-notifications#keyword-notifications) in Slack
 * `denylist.txt` - If you are not going to use an allowlist, this is a good starting set of subdomains you should consider denying. Setting [DNS_SUBDOMAIN](#optional-configurations) will cut down the noise to your knary too. Find & Replace `knary.tld` with your knary domain
@@ -21,23 +22,35 @@
 * `ALLOWLIST_FILE` Location for a file containing case-insensitive subdomains or IP addresses (separated by newlines) that should trigger a notification for knary (unless also included in the denylist). Example input: `allowlist.txt`
 * `DENYLIST_FILE` Location for a file containing case-insensitive subdomains or IP addresses (separated by newlines) that should be ignored by knary and not logged or notified. Example input: `denylist.txt` 
 
-## Burp Collaborator Configuration
+## Burp Collaborator Configuration (Deprecated in favour of REVERSE_PROXY_*)
 If you are running Burp Collaborator on the same server as knary, you will need to configure the following.
-* `BURP_DOMAIN` The domain + TLD to match Collaborator hits on (e.g. `burp.knary.tld`).
+* `BURP_DOMAIN` The FQDN suffix to match Collaborator hits on (e.g. `burp.knary.tld`). This will forward anything `*.burp.knary.tld` to Collaborator.
 * `BURP_DNS_PORT` Local Burp Collaborator DNS port. This can't be `53` because knary listens on that one! Change Collaborator config to be something like `8053`, and set this to `8053`
 * `BURP_HTTP_PORT` Much like the above - set to `8080` (or whatever you set the Burp HTTP port to be)
 * `BURP_HTTPS_PORT` Much like the above - set to `8443` (or whatever you set the Burp HTTPS port to be)
 * `BURP_INT_IP` __Optional__ The internal IP address that Burp Collaborator is bound to. In most cases this will be `127.0.0.1` (which is the default); however, if you run knary in Docker you may need to set this to the Burp Collaborator IP address reachable from within the knary container
 
+## Reverse Proxy Configuration
+You can specify any FQDN to operate as a HTTP(s) and/or DNS reverse proxy. The proxied system will need to support TLS to proxy HTTPS requests. **Note:** Proxied requests will **not** trigger the knary. This can be used to operate Burp Collaborator alongside knary.
+* `REVERSE_PROXY_DOMAIN` The FQDN suffix to match requests that knary should proxy. Example input `burp.knary.tld` would forward anything `*.burp.knary.tld` to the proxied system
+* `REVERSE_PROXY_HTTP` The IP address and port running the service you want to proxy plaintext HTTP requests to. Example input `127.0.0.1:8000`
+* `REVERSE_PROXY_HTTPS` __Optional__ The IP address and port running the service you want to proxy encrypted HTTPS requests to. Example input `127.0.0.1:8443`
+* `REVERSE_PROXY_DNS` __Optional__ The IP address and port running the service you want to proxy DNS requests to. Example input `127.0.0.1:8053`
+
 ## Optional Configurations
-* `FULL_HTTP_REQUEST` Set to `true` to display the full request made to knary, otherwise use the default mininal set
+* `FULL_HTTP_REQUEST` Enable/Disable displaying the full HTTP request made to knary on hits. Default false (true/false)
 * `TLS_*` (CRT/KEY). If you're not using the `LETS_ENCRYPT` configuration use these environment variables to configure the location of your certificate and private key for accepting TLS (HTTPS) requests. Example input `TLS_KEY=certs/knary.key`
-* `DEBUG` Enable/Disable displaying incoming requests in the terminal and some additional info. Default disabled (true/false)
+* `DEBUG` Enable/Disable displaying incoming requests in the terminal and some additional info. Default false (true/false)
 * `ALLOWLIST_STRICT` Set to `true` to prevent fuzzy matching on allowlist items and only alert on exact matches
-* `EXT_IP` The IP address the DNS canary will answer `A` questions with. By default knary will use the nameserver glue record. Setting this option will overrule that behaviour
-* `DENYLIST_ALERTING` By default knary will alert on items in the denylist that haven't triggered in >14 days. Set to `false` to disable this behaviour
+* `EXT_IP` The IP address the DNS canary will answer `A` questions with. By default knary will use the nameserver glue record. Setting this option will override that behaviour
 * `DNS_SUBDOMAIN` Tell knary to only notify on `*.<DNS_SUBDOMAIN>.<CANARY_DOMAIN>` DNS hits. This is useful if you your webhook is getting too noisy with DNS hits to your knary TLD and you do not maintain an allow or denylist. Setting this configuration will mimic how knary operated prior to version 3. Example input: `dns`
 * `ZONE_FILE` knary supports responding to DNS requests based on an RFC 1034/1035 compliant zone file. Example input: `zone_file.txt`
+
+## Optional Posting Configurations
+* `NO_HEARTBEAT_ALERT` Set to `true` to disable the weekly heartbeat message that notifies webhooks that knary is operating as expected
+* `NO_UPDATES_ALERT` Set to `true` to disable the messages that notify webhooks of available updates to the knary binary. This does not prevent these messages from being logged if `LOG_FILE` is set. This is not recommended
+* `NO_CERT_EXPIRY_ALERT` Set to `true` to disable the daily certificate expiry checks that notifies webhooks when certificates are close to expiring. This does not prevent these messages from being logged if `LOG_FILE` is set. This is not recommended
+* `DENYLIST_ALERTING` By default knary will alert on items in the denylist that haven't triggered in >14 days. Set to `false` to disable this behaviour
 
 ## Optional Let's Encrypt Configurations
 * `LE_ENV` Set to `staging` to use the Let's Encrypt's staging environment. Useful if you are testing configurations with Let's Encrypt and do not want to hit the rate limit
