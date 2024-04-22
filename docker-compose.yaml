@@ -8,26 +8,10 @@ services:
       - .env # as below, you can also use the `environment` config to specify variables. This will override matching keys in `env_file`
     environment:
       - BIND_ADDR=0.0.0.0
-    #   - HTTP=true
-    #   - CANARY_DOMAIN=knary.tld,knary2.tld
-    # (etc. etc.)
     build: .
     ports:
       - "80:80"
       - "443:443"
       - "53:53/udp"
-    # volumes: # to save your LE config logs when the container stops
-    #   - ./certs:/certs/
-    #   - ./knary.log:/knary.log
-    deploy:
-      resources:
-        limits:
-          cpus: "1.0" # 0.02
-          memory: 50M # peak: 8.5mb
-        reservations:
-          cpus: "0.25"
-          memory: 10M # idle: 4.3mb - 6mb, light use: 5.1mb - 7.9mb
-
     volumes: # to save your LE config logs when the container stops
       - ./certs:/certs/
-    
