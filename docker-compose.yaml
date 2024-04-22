@@ -27,3 +27,7 @@ services:
         reservations:
           cpus: "0.25"
           memory: 10M # idle: 4.3mb - 6mb, light use: 5.1mb - 7.9mb
+
+    volumes: # to save your LE config logs when the container stops
+      - ./certs:/certs/
+    
